@@ -31,7 +31,15 @@ Railway sets `PORT` automatically. The WebUI service maps that value to `HERMES_
 
 ## Persistent data / volumes
 
-Attach a Railway volume at:
+Railway volumes are not declared in `railway.toml`; that file only controls
+build and deploy settings for each deployment. Create and attach the persistent
+volume as a Railway service resource instead:
+
+```bash
+railway volume add --mount-path /opt/data
+```
+
+Attach the volume at:
 
 ```text
 /opt/data
