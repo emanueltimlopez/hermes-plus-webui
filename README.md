@@ -51,6 +51,10 @@ That single mount replaces the shared `hermes-home` volume used by the official 
 - Hermes WebUI state under `/opt/data/webui`
 - WebUI `~/.hermes`, symlinked to `/opt/data`
 
+Railway mounts volumes as `root`, so the container entrypoint fixes ownership
+and group write permissions for the Hermes runtime users before starting the
+WebUI.
+
 Optional: attach another Railway volume at:
 
 ```text

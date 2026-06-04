@@ -20,7 +20,7 @@ ENV LANG=en_US.utf8 \
     API_SERVER_CORS_ORIGINS=*
 
 RUN groupadd -g 1024 hermeswebui \
-    && useradd -u 1024 -d /home/hermeswebui -g hermeswebui -G users -s /bin/bash -m hermeswebui \
+    && useradd -u 1024 -d /home/hermeswebui -g hermeswebui -G users,hermes -s /bin/bash -m hermeswebui \
     && mkdir -p /app /uv_cache /workspace /opt/data/webui \
         /etc/s6-overlay/s6-rc.d/hermes-webui/dependencies.d \
         /etc/s6-overlay/s6-rc.d/user/contents.d \
@@ -28,6 +28,7 @@ RUN groupadd -g 1024 hermeswebui \
     && ln -s /opt/data /home/hermeswebui/.hermes \
     && chown -R hermeswebui:hermeswebui /home/hermeswebui /app /uv_cache /workspace \
     && chown -R hermes:hermes /opt/data \
+    && chmod -R ug+rwX /opt/data \
     && chmod 0755 /home/hermeswebui \
     && chmod 1777 /app /uv_cache /workspace
 
