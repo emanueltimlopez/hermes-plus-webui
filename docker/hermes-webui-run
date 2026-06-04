@@ -1,0 +1,9 @@
+#!/command/with-contenv bash
+set -euo pipefail
+export HERMES_WEBUI_PORT="${PORT:-${HERMES_WEBUI_PORT:-8787}}"
+export HERMES_WEBUI_HOST="${HERMES_WEBUI_HOST:-0.0.0.0}"
+export HERMES_WEBUI_STATE_DIR="${HERMES_WEBUI_STATE_DIR:-/opt/data/webui}"
+export HERMES_WEBUI_DEFAULT_WORKSPACE="${HERMES_WEBUI_DEFAULT_WORKSPACE:-/workspace}"
+export HERMES_HOME="${HERMES_HOME:-/opt/data}"
+mkdir -p "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+exec /hermeswebui_init.bash
