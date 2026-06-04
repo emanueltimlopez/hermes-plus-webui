@@ -13,7 +13,12 @@ Set at least one model provider key supported by Hermes, for example:
 
 ```env
 OPENAI_API_KEY=...
+OPENAI_BASE_URL=https://api.openai.com/v1
+HERMES_MODEL=gpt-4o
 ```
+
+For any OpenAI-compatible LLM API, replace `OPENAI_BASE_URL` with that provider's
+base URL and set `HERMES_MODEL` to the model name exposed by that endpoint.
 
 Recommended:
 
@@ -50,7 +55,12 @@ Use this only if you want files created or edited through the WebUI workspace br
 
 ```bash
 docker build -t hermes-railway .
-docker run --rm -p 8787:8787 -e PORT=8787 -e OPENAI_API_KEY="$OPENAI_API_KEY" hermes-railway
+docker run --rm -p 8787:8787 \
+  -e PORT=8787 \
+  -e OPENAI_API_KEY="$OPENAI_API_KEY" \
+  -e OPENAI_BASE_URL="${OPENAI_BASE_URL:-https://api.openai.com/v1}" \
+  -e HERMES_MODEL="${HERMES_MODEL:-gpt-4o}" \
+  hermes-railway
 ```
 
 Open:

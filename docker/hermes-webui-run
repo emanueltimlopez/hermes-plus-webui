@@ -5,5 +5,15 @@ export HERMES_WEBUI_HOST="${HERMES_WEBUI_HOST:-0.0.0.0}"
 export HERMES_WEBUI_STATE_DIR="${HERMES_WEBUI_STATE_DIR:-/opt/data/webui}"
 export HERMES_WEBUI_DEFAULT_WORKSPACE="${HERMES_WEBUI_DEFAULT_WORKSPACE:-/workspace}"
 export HERMES_HOME="${HERMES_HOME:-/opt/data}"
-mkdir -p "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+
+if ! mkdir -p "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE"; then
+  fallback_home="${HERMES_FALLBACK_HOME:-/tmp/hermes}"
+  echo "!! WARN: Failed to create Hermes directories under HERMES_HOME=$HERMES_HOME" >&2
+  echo "!! WARN: Falling back to ephemeral storage at $fallback_home" >&2
+  export HERMES_HOME="$fallback_home"
+  export HERMES_WEBUI_STATE_DIR="$fallback_home/webui"
+  export HERMES_WEBUI_DEFAULT_WORKSPACE="${HERMES_FALLBACK_WORKSPACE:-/tmp/hermes-workspace}"
+  mkdir -p "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+fi
+
 exec /hermeswebui_init.bash
