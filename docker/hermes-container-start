@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+/etc/cont-init.d/00-hermes-webui-permissions
+
+exec gateway run

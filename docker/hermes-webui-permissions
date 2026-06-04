@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HERMES_HOME="${HERMES_HOME:-/opt/data}"
+HERMES_WEBUI_STATE_DIR="${HERMES_WEBUI_STATE_DIR:-$HERMES_HOME/webui}"
+HERMES_WEBUI_DEFAULT_WORKSPACE="${HERMES_WEBUI_DEFAULT_WORKSPACE:-/workspace}"
+
+mkdir -p "$HERMES_HOME" "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE" \
+  "$HERMES_HOME/cron" "$HERMES_HOME/sessions"
+
+if id hermes >/dev/null 2>&1; then
+  chown -R hermes:hermes "$HERMES_HOME"
+fi
+chmod -R a+rwX "$HERMES_HOME"
+
+if id hermeswebui >/dev/null 2>&1; then
+  chown -R hermeswebui:hermeswebui "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+fi
+chmod -R a+rwX "$HERMES_WEBUI_DEFAULT_WORKSPACE"

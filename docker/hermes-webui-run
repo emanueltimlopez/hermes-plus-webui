@@ -7,17 +7,19 @@ export HERMES_WEBUI_DEFAULT_WORKSPACE="${HERMES_WEBUI_DEFAULT_WORKSPACE:-/worksp
 export HERMES_HOME="${HERMES_HOME:-/opt/data}"
 
 prepare_writable_dirs() {
-  mkdir -p "$HERMES_HOME" "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+  mkdir -p "$HERMES_HOME" "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE" \
+    "$HERMES_HOME/cron" "$HERMES_HOME/sessions"
 
   if [ "$(id -u)" = "0" ]; then
     if id hermes >/dev/null 2>&1; then
       chown -R hermes:hermes "$HERMES_HOME"
-      chmod -R ug+rwX "$HERMES_HOME"
     fi
+    chmod -R a+rwX "$HERMES_HOME"
 
     if id hermeswebui >/dev/null 2>&1; then
       chown -R hermeswebui:hermeswebui "$HERMES_WEBUI_DEFAULT_WORKSPACE"
     fi
+    chmod -R a+rwX "$HERMES_WEBUI_DEFAULT_WORKSPACE"
   fi
 }
 

@@ -15,7 +15,7 @@ ENV LANG=en_US.utf8 \
     HERMES_WEBUI_AGENT_DIR=/opt/hermes \
     HERMES_WEBUI_HOST=0.0.0.0 \
     HERMES_WEBUI_STATE_DIR=/opt/data/webui \
-    HERMES_WEBUI_DEFAULT_WORKSPACE=/workspace \
+    HERMES_WEBUI_DEFAULT_WORKSPACE=/opt/data/workspace \
     API_SERVER_ENABLED=true \
     API_SERVER_HOST=0.0.0.0 \
     API_SERVER_CORS_ORIGINS=*
@@ -23,6 +23,7 @@ ENV LANG=en_US.utf8 \
 RUN groupadd -g 1024 hermeswebui \
     && useradd -u 1024 -d /home/hermeswebui -g hermeswebui -G users,hermes -s /bin/bash -m hermeswebui \
     && mkdir -p /app /uv_cache /workspace /opt/data/webui \
+        /etc/cont-init.d \
         /etc/s6-overlay/s6-rc.d/hermes-webui/dependencies.d \
         /etc/s6-overlay/s6-rc.d/user/contents.d \
     && rm -rf /home/hermeswebui/.hermes \
@@ -34,11 +35,21 @@ RUN groupadd -g 1024 hermeswebui \
     && chmod 1777 /app /uv_cache /workspace
 
 COPY --from=hermes_webui /apptoo /apptoo
-COPY --from=hermes_webui /hermeswebui_init.bash /hermeswebui_init.bash
+COPY --from=hermes_webui /hermeswebui_init.bash /hermeswebui_init_original.bash
+COPY docker/hermeswebui-init-wrapper.bash /hermeswebui_init.bash
+COPY docker/hermes-container-start /usr/local/bin/hermes-container-start
+COPY docker/hermes-webui-permissions /etc/cont-init.d/00-hermes-webui-permissions
 COPY docker/hermes-webui-run /etc/s6-overlay/s6-rc.d/hermes-webui/run
 COPY docker/hermes-webui-type /etc/s6-overlay/s6-rc.d/hermes-webui/type
+RUN mv /usr/bin/chown /usr/bin/chown.real
+COPY --chmod=0755 docker/chown-wrapper /usr/bin/chown
+RUN mv /usr/bin/chmod /usr/bin/chmod.real
+COPY --chmod=0755 docker/chmod-wrapper /usr/bin/chmod
 
-RUN chmod 0755 /hermeswebui_init.bash /etc/s6-overlay/s6-rc.d/hermes-webui/run \
+RUN chmod 0755 /hermeswebui_init.bash /hermeswebui_init_original.bash \
+        /usr/local/bin/hermes-container-start \
+        /etc/cont-init.d/00-hermes-webui-permissions \
+        /etc/s6-overlay/s6-rc.d/hermes-webui/run /usr/bin/chown \
     && touch /etc/s6-overlay/s6-rc.d/hermes-webui/dependencies.d/base \
         /etc/s6-overlay/s6-rc.d/user/contents.d/hermes-webui \
     && if [ -f /etc/s6-overlay/s6-rc.d/user/contents ]; then \
@@ -48,4 +59,4 @@ RUN chmod 0755 /hermeswebui_init.bash /etc/s6-overlay/s6-rc.d/hermes-webui/run \
 
 EXPOSE 8787 8642
 
-CMD ["gateway", "run"]
+CMD ["hermes-container-start"]
