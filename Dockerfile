@@ -40,8 +40,6 @@ RUN chmod 0755 /hermeswebui_init.bash /etc/s6-overlay/s6-rc.d/hermes-webui/run \
         || printf '%s\n' hermes-webui >> /etc/s6-overlay/s6-rc.d/user/contents; \
     fi
 
-VOLUME ["/opt/data", "/workspace"]
-
 EXPOSE 8787 8642
 
 CMD ["gateway", "run"]
