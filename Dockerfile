@@ -15,24 +15,26 @@ ENV LANG=en_US.utf8 \
     HERMES_WEBUI_AGENT_DIR=/opt/hermes \
     HERMES_WEBUI_HOST=0.0.0.0 \
     HERMES_WEBUI_STATE_DIR=/opt/data/webui \
-    HERMES_WEBUI_DEFAULT_WORKSPACE=/opt/data/workspace \
+    HERMES_WEBUI_DEFAULT_WORKSPACE=/workspace \
     API_SERVER_ENABLED=true \
     API_SERVER_HOST=0.0.0.0 \
     API_SERVER_CORS_ORIGINS=*
 
 RUN groupadd -g 1024 hermeswebui \
-    && useradd -u 1024 -d /home/hermeswebui -g hermeswebui -G users,hermes -s /bin/bash -m hermeswebui \
-    && mkdir -p /app /uv_cache /workspace /opt/data/webui \
+    && useradd -o -u 10000 -d /home/hermeswebui -g hermeswebui -G users,hermes -s /bin/bash -m hermeswebui \
+    && mkdir -p /app /uv_cache /opt/data/webui /opt/data/workspace \
         /etc/cont-init.d \
         /etc/s6-overlay/s6-rc.d/hermes-webui/dependencies.d \
         /etc/s6-overlay/s6-rc.d/user/contents.d \
+    && rm -rf /workspace \
+    && ln -s /opt/data/workspace /workspace \
     && rm -rf /home/hermeswebui/.hermes \
     && ln -s /opt/data /home/hermeswebui/.hermes \
-    && chown -R hermeswebui:hermeswebui /home/hermeswebui /app /uv_cache /workspace \
     && chown -R hermes:hermes /opt/data \
     && chmod -R ug+rwX /opt/data \
+    && chown -R hermeswebui:hermeswebui /home/hermeswebui /app /uv_cache /opt/data/webui /opt/data/workspace \
     && chmod 0755 /home/hermeswebui \
-    && chmod 1777 /app /uv_cache /workspace
+    && chmod 1777 /app /uv_cache /opt/data/webui /opt/data/workspace
 
 COPY --from=hermes_webui /apptoo /apptoo
 COPY --from=hermes_webui /hermeswebui_init.bash /hermeswebui_init_original.bash

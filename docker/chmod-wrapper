@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set +e
 
-/usr/bin/chmod.real "$@"
+/usr/bin/chmod.real "$@" 2>/dev/null
 
 exit 0

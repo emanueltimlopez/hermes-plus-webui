@@ -5,21 +5,48 @@ export HERMES_WEBUI_HOST="${HERMES_WEBUI_HOST:-0.0.0.0}"
 export HERMES_WEBUI_STATE_DIR="${HERMES_WEBUI_STATE_DIR:-/opt/data/webui}"
 export HERMES_WEBUI_DEFAULT_WORKSPACE="${HERMES_WEBUI_DEFAULT_WORKSPACE:-/workspace}"
 export HERMES_HOME="${HERMES_HOME:-/opt/data}"
+export HERMES_WORKSPACE_DIR="${HERMES_WORKSPACE_DIR:-$HERMES_HOME/workspace}"
+export CHOWN="${CHOWN:-/usr/bin/chown.real}"
+export CHMOD="${CHMOD:-/usr/bin/chmod.real}"
+
+try_chown() {
+  "$CHOWN" "$@" 2>/dev/null || true
+}
+
+try_chmod() {
+  "$CHMOD" "$@" 2>/dev/null || true
+}
 
 prepare_writable_dirs() {
-  mkdir -p "$HERMES_HOME" "$HERMES_WEBUI_STATE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE" \
+  mkdir -p "$HERMES_HOME" "$HERMES_WEBUI_STATE_DIR" "$HERMES_WORKSPACE_DIR" \
     "$HERMES_HOME/cron" "$HERMES_HOME/sessions"
+  if [ ! -e "$HERMES_WEBUI_DEFAULT_WORKSPACE" ]; then
+    ln -s "$HERMES_WORKSPACE_DIR" "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+  fi
+  if [ ! -s "$HERMES_HOME/active_profile" ]; then
+    printf 'default\n' > "$HERMES_HOME/active_profile"
+  fi
 
   if [ "$(id -u)" = "0" ]; then
     if id hermes >/dev/null 2>&1; then
-      chown -R hermes:hermes "$HERMES_HOME"
+      try_chown -R hermes:hermes "$HERMES_HOME"
     fi
-    chmod -R a+rwX "$HERMES_HOME"
+    try_chmod -R a+rwX "$HERMES_HOME"
+    try_chmod a+rw "$HERMES_HOME/active_profile"
+    if [ -e "$HERMES_HOME/state.db" ]; then
+      try_chmod a+rw "$HERMES_HOME/state.db"
+    fi
+    try_chmod -R a+rwX "$HERMES_WEBUI_STATE_DIR"
+    try_chmod 1777 "$HERMES_WEBUI_STATE_DIR"
 
     if id hermeswebui >/dev/null 2>&1; then
-      chown -R hermeswebui:hermeswebui "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+      try_chown -R hermeswebui:hermeswebui "$HERMES_WEBUI_STATE_DIR"
+      try_chown -R hermeswebui:hermeswebui "$HERMES_WORKSPACE_DIR"
     fi
-    chmod -R a+rwX "$HERMES_WEBUI_DEFAULT_WORKSPACE"
+    try_chmod -R a+rwX "$HERMES_WEBUI_STATE_DIR"
+    try_chmod 1777 "$HERMES_WEBUI_STATE_DIR"
+    try_chmod -R a+rwX "$HERMES_WORKSPACE_DIR"
+    try_chmod 1777 "$HERMES_WORKSPACE_DIR"
   fi
 }
 
@@ -32,5 +59,21 @@ if ! prepare_writable_dirs; then
   export HERMES_WEBUI_DEFAULT_WORKSPACE="${HERMES_FALLBACK_WORKSPACE:-/tmp/hermes-workspace}"
   prepare_writable_dirs
 fi
+
+keep_active_profile_writable() {
+  for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+    if [ ! -s "$HERMES_HOME/active_profile" ]; then
+      printf 'default\n' > "$HERMES_HOME/active_profile" || true
+    fi
+    try_chmod a+rw "$HERMES_HOME/active_profile"
+    if [ -e "$HERMES_HOME/state.db" ]; then
+      try_chmod a+rw "$HERMES_HOME/state.db"
+    fi
+    try_chmod -R a+rwX "$HERMES_WEBUI_STATE_DIR"
+    try_chmod 1777 "$HERMES_WEBUI_STATE_DIR"
+    sleep 1
+  done
+}
+keep_active_profile_writable &
 
 exec /hermeswebui_init.bash

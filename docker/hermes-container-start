@@ -3,4 +3,30 @@ set -euo pipefail
 
 /etc/cont-init.d/00-hermes-webui-permissions
 
-exec gateway run
+start_native_gateway() {
+  local hermes_bin=""
+  if [ -x /opt/hermes/.venv/bin/hermes ]; then
+    hermes_bin=/opt/hermes/.venv/bin/hermes
+  elif command -v hermes >/dev/null 2>&1; then
+    hermes_bin="$(command -v hermes)"
+  fi
+
+  if [ -z "$hermes_bin" ]; then
+    echo "[startup] Hermes CLI not found; native gateway not started" >&2
+    return 0
+  fi
+
+  (
+    while true; do
+      echo "[startup] starting native Hermes gateway: $hermes_bin gateway" >&2
+      "$hermes_bin" gateway
+      status=$?
+      echo "[startup] native Hermes gateway exited with status $status; restarting in 5s" >&2
+      sleep 5
+    done
+  ) &
+}
+
+start_native_gateway
+
+exec tail -f /dev/null
