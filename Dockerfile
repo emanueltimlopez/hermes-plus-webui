@@ -12,6 +12,7 @@ RUN apt-get update \
 ENV LANG=en_US.utf8 \
     LC_ALL=C \
     HERMES_HOME=/opt/data \
+    HERMES_WEBUI_AGENT_DIR=/opt/hermes \
     HERMES_WEBUI_HOST=0.0.0.0 \
     HERMES_WEBUI_STATE_DIR=/opt/data/webui \
     HERMES_WEBUI_DEFAULT_WORKSPACE=/workspace \
