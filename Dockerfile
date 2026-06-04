@@ -21,7 +21,9 @@ ENV LANG=en_US.utf8 \
 
 RUN groupadd -g 1024 hermeswebui \
     && useradd -u 1024 -d /home/hermeswebui -g hermeswebui -G users -s /bin/bash -m hermeswebui \
-    && mkdir -p /app /uv_cache /workspace /opt/data/webui /etc/s6-overlay/s6-rc.d/hermes-webui \
+    && mkdir -p /app /uv_cache /workspace /opt/data/webui \
+        /etc/s6-overlay/s6-rc.d/hermes-webui/dependencies.d \
+        /etc/s6-overlay/s6-rc.d/user/contents.d \
     && rm -rf /home/hermeswebui/.hermes \
     && ln -s /opt/data /home/hermeswebui/.hermes \
     && chown -R hermeswebui:hermeswebui /home/hermeswebui /app /uv_cache /workspace \
@@ -35,6 +37,8 @@ COPY docker/hermes-webui-run /etc/s6-overlay/s6-rc.d/hermes-webui/run
 COPY docker/hermes-webui-type /etc/s6-overlay/s6-rc.d/hermes-webui/type
 
 RUN chmod 0755 /hermeswebui_init.bash /etc/s6-overlay/s6-rc.d/hermes-webui/run \
+    && touch /etc/s6-overlay/s6-rc.d/hermes-webui/dependencies.d/base \
+        /etc/s6-overlay/s6-rc.d/user/contents.d/hermes-webui \
     && if [ -f /etc/s6-overlay/s6-rc.d/user/contents ]; then \
         grep -qxF hermes-webui /etc/s6-overlay/s6-rc.d/user/contents \
         || printf '%s\n' hermes-webui >> /etc/s6-overlay/s6-rc.d/user/contents; \
